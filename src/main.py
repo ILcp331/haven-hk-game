@@ -36,10 +36,19 @@ class Game:
         self.walls = pg.sprite.Group()
 
         # Sprites
-        self.player = Player(self.walls, (64, 64), self.sprites)
+        self.player = Player(
+            self.walls,
+            (self.WIDTH / 2 - Player.WIDTH / 2, 64),
+            self.sprites
+        )
 
         # Level
         self.place_border_walls()
+        Wall(
+            (0, self.HEIGHT - 256),
+            (500, BORDER_WALL_THICKNESS),
+            self.sprites, self.walls
+        )
 
     def place_border_walls(self):
         # Ceiling
