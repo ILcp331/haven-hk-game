@@ -3,6 +3,7 @@ from typing import Literal
 import pygame as pg
 
 from ..utils.keybind import Keybind
+from ..utils.states import PlayerState
 
 pg.init()
 
@@ -13,9 +14,9 @@ class Player(pg.sprite.Sprite):
     COLOR = (0, 0, 0)
 
     KEYBINDS = Keybind(
-        move_left  = pg.K_LEFT,
-        move_right = pg.K_RIGHT,
-        bounce     = pg.K_SPACE
+        move_left=pg.K_LEFT,
+        move_right=pg.K_RIGHT,
+        bounce=pg.K_SPACE
     )
 
     ACCELERATION = 1
@@ -34,6 +35,10 @@ class Player(pg.sprite.Sprite):
 
         self.pos = pg.Vector2(pos)
         self.vel = pg.Vector2(0, 0)
+        self.stored_yvel = -self.vel.y
+
+        self.grounded = False
+        self.state = PlayerState.IDLE
 
         self.image = pg.Surface((self.WIDTH, self.HEIGHT))
         self.image.fill(self.COLOR)
@@ -131,6 +136,10 @@ class Player(pg.sprite.Sprite):
         if not collided_by_dir['y']:
             self.pos.y += self.vel.y
 
+    def update_state(self):
+        pass
+
     def update(self):
         self.move()
+        self.update_state()
         self.update_image()
