@@ -19,9 +19,9 @@ class Player(pg.sprite.Sprite):
     )
 
     ACCELERATION = 1
-    FRICTION = 0.9
+    FRICTION = 0.875
     GRAVITY = 1
-    TERMINAL_VELOCITY = 12
+    TERMINAL_VELOCITY = 24
 
     def __init__(
         self,
