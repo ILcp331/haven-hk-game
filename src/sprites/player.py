@@ -122,8 +122,8 @@ class Player(pg.sprite.Sprite):
 
     def resolve_collision(
         self,
-        player_rect: pg.Rect,
-        wall_rect: pg.Rect,
+        player_rect: pg.FRect,
+        wall_rect: pg.FRect,
         direction: Literal['x', 'y']
     ) -> pg.Vector2:
         new_rect = player_rect.copy()
@@ -137,6 +137,7 @@ class Player(pg.sprite.Sprite):
                 delta.x = wall_rect.right - new_rect.left
 
             new_rect.x += delta.x
+            self.vel.x = 0
 
         elif direction == 'y':
             if self.vel.y > 0:
@@ -150,6 +151,7 @@ class Player(pg.sprite.Sprite):
                 delta.y = wall_rect.bottom - new_rect.top
 
             new_rect.y += delta.y
+            self.vel.y = 0
 
         else:
             raise ValueError(f'direction argument must be either "x" or "y". Got {direction}')
@@ -162,19 +164,23 @@ class Player(pg.sprite.Sprite):
         collided = {'x': False, 'y': False}
 
         # For testing horizontal movement
-        player_xvel_rect = pg.Rect(
-            self.pos.x + self.vel.x, self.pos.y,
-            self.WIDTH, self.HEIGHT
+        player_xvel_rect = pg.FRect(
+            self.pos.x + self.vel.x,
+            self.pos.y,
+            self.WIDTH,
+            self.HEIGHT
         )
 
         # For testing vertical movement
-        player_yvel_rect = pg.Rect(
-            self.pos.x, self.pos.y + self.vel.y,
-            self.WIDTH, self.HEIGHT
+        player_yvel_rect = pg.FRect(
+            self.pos.x,
+            self.pos.y + self.vel.y,
+            self.WIDTH,
+            self.HEIGHT
         )
 
         for wall in self.walls:
-            wall_rect = pg.Rect(wall.pos.x, wall.pos.y, wall.size[0], wall.size[1])
+            wall_rect = pg.FRect(wall.pos.x, wall.pos.y, wall.size[0], wall.size[1])
 
             if player_xvel_rect.colliderect(wall_rect):
                 collided['x'] = True
@@ -241,9 +247,10 @@ class Player(pg.sprite.Sprite):
             self.pos.y += self.vel.y
 
         # Apply compensation for any y offsets due to collisions if we are about to bounce
-        if self.actions.bounce:
-            self.pos.y += self.bounce_compensate_amount
-            self.bounce_compensate_amount = 0
+        # FIXME: Doesn't work as intended
+        # if self.actions.bounce:
+        #     self.pos.y += self.bounce_compensate_amount
+        #     self.bounce_compensate_amount = 0
 
         return self.get_pos_change(self.pos)
 
