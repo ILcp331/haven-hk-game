@@ -1,3 +1,4 @@
+from math import isclose
 from enum import Enum, auto
 from dataclasses import dataclass
 
@@ -74,7 +75,11 @@ class Player(pg.sprite.Sprite):
         # Core
         self.pos = pg.Vector2(pos)
         self.vel = pg.Vector2(0, 0)
+        self.bounce_compensate_amount = 0
         self.stored_yvel = -(self.vel.y - self.BOUNCE_ENERGY_LOSS)
+
+        self.last_pos = self.pos.copy()
+        self.delta_pos = self.last_pos - self.pos  # Used for external access
 
         # Status
         self.is_grounded = False
@@ -110,7 +115,6 @@ class Player(pg.sprite.Sprite):
 
         self.color = pg.Color.from_hsla(hue, self.COLOR_GRAD_S, self.COLOR_GRAD_L, 0)
 
-
     def update_image(self):
         self.update_color()
         self.image.fill(self.color)
@@ -121,7 +125,8 @@ class Player(pg.sprite.Sprite):
         wall_rect: pg.Rect,
         direction: Literal['x', 'y']
     ) -> pg.Vector2:
-        new_pos = self.pos.copy()
+        new_pos = self.pos + self.vel
+        delta = pg.Vector2(0, 0)  # Using an object due to scope limitations
 
         if direction == 'x':
             # Was moving right
@@ -131,6 +136,9 @@ class Player(pg.sprite.Sprite):
             # Was moving left
             else:
                 new_pos.x = wall_rect.right
+
+            # X offset imposed by resolving collision with wall
+            delta.x = self.get_pos_change(new_pos).x
 
             self.vel.x = 0
 
@@ -143,22 +151,25 @@ class Player(pg.sprite.Sprite):
 
                 # Only update stored bounce velocity on the frame the player lands
                 if self.just_grounded():
-                    # Since this is calculated before gravity is applied we apply it here,
-                    # otherwise a frame of acceleration will be lost every time you land
-                    self.stored_yvel = -(self.vel.y + self.GRAVITY - self.BOUNCE_ENERGY_LOSS)
+                    self.stored_yvel += -(self.vel.y - self.BOUNCE_ENERGY_LOSS)
 
             # Was moving up
             else:
                 new_pos.y = wall_rect.bottom
+
+            # Y offset imposed by resolving collision with floor
+            delta.y = new_pos.y - (self.pos.y + self.vel.y)
 
             self.vel.y = 0
 
         else:
             raise ValueError(f'direction argument must be either "x" or "y". Got {direction}')
 
-        return new_pos
+        self.pos = new_pos.copy()
 
-    def handle_collisions(self):
+        return delta
+
+    def handle_collisions(self) -> dict[Literal['x', 'y'], bool]:
         collided = {'x': False, 'y': False}
 
         # For testing horizontal movement
@@ -178,11 +189,21 @@ class Player(pg.sprite.Sprite):
 
             if player_xvel_rect.colliderect(wall_rect):
                 collided['x'] = True
-                self.pos = self.resolve_collision(wall_rect, 'x')
+                dx, _ = self.resolve_collision(wall_rect, 'x')
+
+                # Currently no need to compensate for collision dx in any way
 
             if player_yvel_rect.colliderect(wall_rect):
                 collided['y'] = True
-                self.pos = self.resolve_collision(wall_rect, 'y')
+                _, dy = self.resolve_collision(wall_rect, 'y')
+
+                # We need to compensate in the opposite direction of collision dy
+                self.bounce_compensate_amount += -dy
+                # Only account for gravity if are on the ground (but not just landed as we need to
+                # include gravity when storing velocity) so compensation doesn't rack up while we're
+                # resting on the ground
+                if self.is_grounded and not self.just_grounded():
+                    self.bounce_compensate_amount -= self.GRAVITY
 
         return collided
 
@@ -203,9 +224,16 @@ class Player(pg.sprite.Sprite):
 
         if self.actions.bounce:
             if self.is_grounded:
-                self.vel.y = self.stored_yvel  # Activate stored velocity
+                self.bounce()
 
-    def update_physics(self):
+    def bounce(self, extra_vel: float = 0):
+        # Stored velocity is transferred to vel.y
+        # Influence from upcoming gravity is accounted for
+        self.vel.y = self.stored_yvel + extra_vel - self.GRAVITY
+
+        self.stored_yvel = 0
+
+    def update_physics(self) -> pg.Vector2:
         self.vel.x *= self.FRICTION
         self.vel.y += self.GRAVITY
         self.vel.y = min(self.vel.y, self.TERMINAL_VELOCITY)
@@ -223,19 +251,30 @@ class Player(pg.sprite.Sprite):
             self.is_grounded = False
             self.pos.y += self.vel.y
 
+        # Apply compensation for any y offsets due to collisions if we are about to bounce
+        if self.actions.bounce:
+            self.pos.y += self.bounce_compensate_amount
+            self.bounce_compensate_amount = 0
+
+        return self.get_pos_change(self.pos)
+
     def update_state(self):
         raise NotImplementedError
 
     def just_grounded(self):
         return (not self.was_grounded) and self.is_grounded
 
+    def get_pos_change(self, new_pos: pg.Vector2) -> pg.Vector2:
+        return new_pos - self.last_pos
+
     def update(self):
         self.actions.clear()
 
         self.update_actions()
         self.perform_actions()
-        self.update_physics()
+        self.delta_pos = self.update_physics()
 
         self.update_image()
 
         self.was_grounded = self.is_grounded
+        self.last_pos = self.pos.copy()

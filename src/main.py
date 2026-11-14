@@ -9,7 +9,8 @@ pg.init()
 
 
 class Game:
-    FPS = 60
+    SPEED = 1
+    FPS = 60 if SPEED <= 1 else round(60 * SPEED)
 
     WIDTH = 1280
     HEIGHT = 720
@@ -79,7 +80,9 @@ class Game:
         )
 
     def update(self):
-        self.sprites.update()
+        if self.frames % round(1 / self.SPEED) == 0:
+            self.sprites.update()
+
         self.sprites.draw(self.window)
 
     def debug_update(self):
@@ -89,7 +92,9 @@ class Game:
         self.debug_lines = [
             f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)',
             f'Sprites: {len(self.sprites)} | Walls: {len(self.walls)}',
-            f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}',
+            f'Player: pos {round(self.player.pos, 2)}',
+            f'        vel {round(self.player.vel, 2)}',
+            f'        delta {round(self.player.delta_pos, 2)} (comp: {self.player.bounce_compensate_amount})',
             f'        grounded: {self.player.is_grounded}',
             f'        stored: {self.player.stored_yvel} ({vel_factor * 100:.2f}%)',
             f'        hue: {self.player.color.hsla[0]:.2f}/{Player.COLOR_GRAD_H_RANGE[1]}'
