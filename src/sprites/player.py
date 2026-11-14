@@ -51,9 +51,9 @@ class Player(pg.sprite.Sprite):
     ACCELERATION = 1
     FRICTION = 0.875
     GRAVITY = 1
-    TERMINAL_VELOCITY = 24
+    TERMINAL_VELOCITY = 9999
 
-    BOUNCE_ENERGY_LOSS = 0.05
+    BOUNCE_ENERGY_LOSS = 2.5
 
     def __init__(
         self,
@@ -66,7 +66,7 @@ class Player(pg.sprite.Sprite):
 
         self.pos = pg.Vector2(pos)
         self.vel = pg.Vector2(0, 0)
-        self.stored_yvel = -self.vel.y * (1 - self.BOUNCE_ENERGY_LOSS)
+        self.stored_yvel = -(self.vel.y - self.BOUNCE_ENERGY_LOSS)
 
         self.is_grounded = False
         self.was_grounded = False
@@ -108,7 +108,9 @@ class Player(pg.sprite.Sprite):
 
                 # Only update stored bounce velocity on the frame the player lands
                 if self.just_grounded():
-                    self.stored_yvel = -self.vel.y * (1 - self.BOUNCE_ENERGY_LOSS)
+                    # Since this is calculated before gravity is applied we apply it here,
+                    # otherwise a frame of acceleration will be lost every time you land
+                    self.stored_yvel = -(self.vel.y + self.GRAVITY - self.BOUNCE_ENERGY_LOSS)
 
             # Was moving up
             else:
