@@ -1,12 +1,37 @@
+from enum import Enum, auto
+from dataclasses import dataclass
+
 from typing import Literal
 
 import pygame as pg
 
-from ..utils.keybind import Keybind
-from ..utils.states import PlayerState
-
 pg.init()
 
+@dataclass
+class Keybind:
+    """Dataclass for storing pygame keycodes for various actions.
+    """
+    move_left: int
+    move_right: int
+    bounce: int
+
+@dataclass
+class PlayerAction:
+    """Dataclass for tracking what actions must the player take according to the user.
+    """
+    move_left: bool = False
+    move_right: bool = False
+    bounce: bool = False
+
+    def clear(self):
+        self.move_left = False
+        self.move_right = False
+        self.bounce = False
+
+class PlayerState(Enum):
+    """Placeholder at the moment.
+    """
+    IDLE = auto()
 
 class Player(pg.sprite.Sprite):
     WIDTH = 32
@@ -38,6 +63,7 @@ class Player(pg.sprite.Sprite):
         self.stored_yvel = -self.vel.y
 
         self.grounded = False
+        self.actions = PlayerAction()
         self.state = PlayerState.IDLE
 
         self.image = pg.Surface((self.WIDTH, self.HEIGHT))
@@ -110,16 +136,22 @@ class Player(pg.sprite.Sprite):
 
         return collided
 
-    def move(self):
+    def update_actions(self):
         self.keys_pressed = pg.key.get_just_pressed()
         self.keys_down = pg.key.get_pressed()
 
-        if self.keys_down[self.KEYBINDS.move_left]:
+        self.actions.move_left = self.keys_down[self.KEYBINDS.move_left]
+        self.actions.move_right = self.keys_down[self.KEYBINDS.move_right]
+        self.actions.bounce = self.keys_pressed[self.KEYBINDS.bounce]
+
+    def perform_actions(self):
+        if self.actions.move_left:
             self.vel.x -= self.ACCELERATION
 
-        if self.keys_down[self.KEYBINDS.move_right]:
+        if self.actions.move_right:
             self.vel.x += self.ACCELERATION
 
+    def update_physics(self):
         self.vel.x *= self.FRICTION
         self.vel.y += self.GRAVITY
         self.vel.y = min(self.vel.y, self.TERMINAL_VELOCITY)
@@ -140,6 +172,10 @@ class Player(pg.sprite.Sprite):
         pass
 
     def update(self):
-        self.move()
+        self.actions.clear()
+
+        self.update_actions()
+        self.perform_actions()
+        self.update_physics()
         self.update_state()
         self.update_image()
