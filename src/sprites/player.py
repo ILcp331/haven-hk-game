@@ -139,6 +139,8 @@ class Player(pg.sprite.Sprite):
             new_rect.x += delta.x
             self.vel.x = 0
 
+            print(f'resolved by moving {delta.x} in the x dir')
+
         elif direction == 'y':
             if self.vel.y > 0:
                 delta.y = wall_rect.top - new_rect.bottom
@@ -152,6 +154,8 @@ class Player(pg.sprite.Sprite):
 
             new_rect.y += delta.y
             self.vel.y = 0
+
+            print(f'resolved by moving {delta.y} in the y dir')
 
         else:
             raise ValueError(f'direction argument must be either "x" or "y". Got {direction}')
@@ -183,12 +187,22 @@ class Player(pg.sprite.Sprite):
             wall_rect = pg.FRect(wall.pos.x, wall.pos.y, wall.size[0], wall.size[1])
 
             if player_xvel_rect.colliderect(wall_rect):
+                print('[X AXIS] COLLISION DETECTED:')
+                print(f'with "{wall.id}": {wall_rect}')
+                print(f'player: {player_xvel_rect} (after x+{self.vel.x})')
+                print()
+
                 collided['x'] = True
                 dx, _ = self.resolve_collision(player_xvel_rect, wall_rect, 'x')
 
                 # Currently no need to compensate for collision dx in any way
 
             if player_yvel_rect.colliderect(wall_rect):
+                print('[Y AXIS] COLLISION DETECTED:')
+                print(f'with "{wall.id}": {wall_rect}')
+                print(f'player: {player_yvel_rect} (after y+{self.vel.y})')
+                print()
+
                 collided['y'] = True
                 _, dy = self.resolve_collision(player_yvel_rect, wall_rect, 'y')
 
@@ -247,10 +261,10 @@ class Player(pg.sprite.Sprite):
             self.pos.y += self.vel.y
 
         # Apply compensation for any y offsets due to collisions if we are about to bounce
-        # FIXME: Doesn't work as intended
-        # if self.actions.bounce:
+        # FIXME: Doesn't work as intended. Compensation system also broken
+        if self.actions.bounce:
         #     self.pos.y += self.bounce_compensate_amount
-        #     self.bounce_compensate_amount = 0
+            self.bounce_compensate_amount = 0
 
         return self.get_pos_change(self.pos)
 
@@ -264,6 +278,7 @@ class Player(pg.sprite.Sprite):
         return new_pos - self.last_pos
 
     def update(self):
+        print(f'pos {self.pos.y - 32 - 256}, vel {self.vel.y}')
         self.actions.clear()
 
         self.update_actions()

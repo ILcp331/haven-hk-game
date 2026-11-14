@@ -52,31 +52,32 @@ class Game:
         )
 
     def place_border_walls(self):
-        # Ceiling
         Wall(
             (0, 0),
             (self.WIDTH, BORDER_WALL_THICKNESS),
-            self.sprites, self.walls
+            self.sprites, self.walls,
+            id='ceiling',
         )
 
-        # Floor
         Wall(
             (0, self.HEIGHT - BORDER_WALL_THICKNESS),
             (self.WIDTH, BORDER_WALL_THICKNESS),
-            self.sprites, self.walls
+            self.sprites, self.walls,
+            id='floor',
         )
 
-        # Left Wall
         Wall(
             (0, 0),
             (BORDER_WALL_THICKNESS, self.HEIGHT),
-            self.sprites, self.walls
+            self.sprites, self.walls,
+            id='leftw',
         )
-        # Right Wall
+
         Wall(
             (self.WIDTH - BORDER_WALL_THICKNESS, 0),
             (BORDER_WALL_THICKNESS, self.HEIGHT),
-            self.sprites, self.walls
+            self.sprites, self.walls,
+            id='rightw',
         )
 
     def update(self):
@@ -111,6 +112,7 @@ class Game:
         )
 
     def mainloop(self):
+        print(f'======== FRAME {self.frames} ========')
         self.window.fill((255, 255, 255))
 
         for e in pg.event.get():

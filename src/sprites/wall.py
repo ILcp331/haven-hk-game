@@ -6,13 +6,22 @@ pg.init()
 class Wall(pg.sprite.Sprite):
     COLOR = pg.Color(128, 128, 128)
 
+    wall_index = 0
+
     def __init__(
         self,
         pos: tuple[float, float],
         size: tuple[float, float],
-        *groups
+        *groups,
+        **kwargs
     ):
         super().__init__(*groups)
+        self.id = f'wall{self.wall_index}'
+        if 'id' in kwargs:
+            self.id = kwargs['id']
+        else:
+            self.id = f'wall{self.wall_index}'
+            self.wall_index += 1
 
         self.pos = pg.Vector2(pos)
         self.size = size
