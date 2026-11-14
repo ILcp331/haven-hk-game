@@ -7,6 +7,7 @@ import pygame as pg
 
 pg.init()
 
+
 @dataclass
 class Keybind:
     """Dataclass for storing pygame keycodes for various actions.
@@ -14,6 +15,7 @@ class Keybind:
     move_left: int
     move_right: int
     bounce: int
+
 
 @dataclass
 class PlayerAction:
@@ -28,10 +30,12 @@ class PlayerAction:
         self.move_right = False
         self.bounce = False
 
+
 class PlayerState(Enum):
     """Placeholder at the moment.
     """
     IDLE = auto()
+
 
 class Player(pg.sprite.Sprite):
     WIDTH = 32
@@ -39,15 +43,17 @@ class Player(pg.sprite.Sprite):
     COLOR = (0, 0, 0)
 
     KEYBINDS = Keybind(
-        move_left=pg.K_LEFT,
-        move_right=pg.K_RIGHT,
-        bounce=pg.K_SPACE
+        move_left  = pg.K_LEFT,
+        move_right = pg.K_RIGHT,
+        bounce     = pg.K_UP
     )
 
     ACCELERATION = 1
     FRICTION = 0.875
     GRAVITY = 1
     TERMINAL_VELOCITY = 24
+
+    BOUNCE_ENERGY_LOSS = 0.05
 
     def __init__(
         self,
@@ -60,9 +66,10 @@ class Player(pg.sprite.Sprite):
 
         self.pos = pg.Vector2(pos)
         self.vel = pg.Vector2(0, 0)
-        self.stored_yvel = -self.vel.y
+        self.stored_yvel = -self.vel.y * (1 - self.BOUNCE_ENERGY_LOSS)
 
-        self.grounded = False
+        self.is_grounded = False
+        self.was_grounded = False
         self.actions = PlayerAction()
         self.state = PlayerState.IDLE
 
@@ -96,6 +103,12 @@ class Player(pg.sprite.Sprite):
             # Was moving down
             if self.vel.y > 0:
                 new_pos.y = wall_rect.top - self.HEIGHT
+
+                self.is_grounded = True
+
+                # Only update stored bounce velocity on the frame the player lands
+                if self.just_grounded():
+                    self.stored_yvel = -self.vel.y * (1 - self.BOUNCE_ENERGY_LOSS)
 
             # Was moving up
             else:
@@ -151,6 +164,10 @@ class Player(pg.sprite.Sprite):
         if self.actions.move_right:
             self.vel.x += self.ACCELERATION
 
+        if self.actions.bounce:
+            if self.is_grounded:
+                self.vel.y = self.stored_yvel
+
     def update_physics(self):
         self.vel.x *= self.FRICTION
         self.vel.y += self.GRAVITY
@@ -166,10 +183,14 @@ class Player(pg.sprite.Sprite):
             self.pos.x += self.vel.x
 
         if not collided_by_dir['y']:
+            self.is_grounded = False
             self.pos.y += self.vel.y
 
     def update_state(self):
         pass
+
+    def just_grounded(self):
+        return (not self.was_grounded) and self.is_grounded
 
     def update(self):
         self.actions.clear()
@@ -179,3 +200,5 @@ class Player(pg.sprite.Sprite):
         self.update_physics()
         self.update_state()
         self.update_image()
+
+        self.was_grounded = self.is_grounded

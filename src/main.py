@@ -29,7 +29,7 @@ class Game:
 
         self.running = True
         self.allow_debug = allow_debug
-        self.debug_active = False
+        self.debug_active = allow_debug
         self.debug_lines = []
 
         self.sprites = pg.sprite.Group()
@@ -78,6 +78,7 @@ class Game:
             f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)\n'
             f'Sprites: {len(self.sprites)} | Walls: {len(self.walls)}\n'
             f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}\n'
+            f'        grounded: {self.player.is_grounded} | stored: {self.player.stored_yvel}'
         ]
 
         draw_lines(
