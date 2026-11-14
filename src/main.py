@@ -1,6 +1,7 @@
 import pygame as pg
 
 from .constants import BORDER_WALL_THICKNESS
+from .utils.text import draw_lines
 from .sprites.player import Player
 from .sprites.wall import Wall
 
@@ -14,6 +15,9 @@ class Game:
     HEIGHT = 720
 
     BG_COLOR = (255, 255, 255)
+    DEBUG_COLOR = (96, 255, 96)
+
+    DEBUG_FONT = pg.font.SysFont('Consolas', 16)
 
     def __init__(self, *, allow_debug: bool = False):
         self.window = pg.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -25,6 +29,7 @@ class Game:
         self.running = True
         self.allow_debug = allow_debug
         self.debug_active = False
+        self.debug_lines = []
 
         self.sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
@@ -68,11 +73,20 @@ class Game:
         self.sprites.draw(self.window)
 
     def debug_update(self):
-        print(
-            f'\n'
+        self.debug_lines = [
             f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)\n'
+            f'Sprites: {len(self.sprites)} | Walls: {len(self.walls)}\n'
             f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}\n'
-            f'Walls num: {len(self.walls)}'
+        ]
+
+        draw_lines(
+            self.window,
+            (8, 8),
+            self.DEBUG_FONT,
+            self.debug_lines,
+            self.DEBUG_COLOR,
+            background=(0, 0, 0, 192),
+            alignment='left',
         )
 
     def mainloop(self):
@@ -87,7 +101,9 @@ class Game:
                     self.debug_active = (not self.debug_active) and self.allow_debug
 
         self.update()
-        self.debug_update()
+
+        if self.debug_active:
+            self.debug_update()
 
         pg.display.update()
         self.clock.tick(self.FPS)
