@@ -38,22 +38,29 @@ class PlayerState(Enum):
 
 
 class Player(pg.sprite.Sprite):
+    # Image
     WIDTH = 32
     HEIGHT = 32
-    COLOR = pg.Color(0, 0, 0)
+
+    # For the color indicator of stored bounce height
+    COLOR_DEFAULT = pg.Color(0, 0, 0)
+    COLOR_GRAD_S = 60
+    COLOR_GRAD_L = 100
+    COLOR_GRAD_H_RANGE = (0, 135)
+    COLOR_GRAD_VEL_RANGE = (0, -30)
+
+    # Physics
+    ACCELERATION = 1
+    FRICTION = 0.875
+    GRAVITY = 1
+    TERMINAL_VELOCITY = 9999
+    BOUNCE_ENERGY_LOSS = 2.5
 
     KEYBINDS = Keybind(
         move_left  = pg.K_LEFT,
         move_right = pg.K_RIGHT,
         bounce     = pg.K_UP
     )
-
-    ACCELERATION = 1
-    FRICTION = 0.875
-    GRAVITY = 1
-    TERMINAL_VELOCITY = 9999
-
-    BOUNCE_ENERGY_LOSS = 2.5
 
     def __init__(
         self,
@@ -64,21 +71,32 @@ class Player(pg.sprite.Sprite):
         super().__init__(*groups)
         self.walls = walls  # Reference to the level walls for collisions
 
+        # Core
         self.pos = pg.Vector2(pos)
         self.vel = pg.Vector2(0, 0)
         self.stored_yvel = -(self.vel.y - self.BOUNCE_ENERGY_LOSS)
 
+        # Status
         self.is_grounded = False
         self.was_grounded = False
         self.actions = PlayerAction()
         self.state = PlayerState.IDLE
 
+        # Image
+        self.color = self.COLOR_DEFAULT
         self.image = pg.Surface((self.WIDTH, self.HEIGHT))
-        self.image.fill(self.COLOR)
+        self.image.fill(self.color)
+
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.pos
 
+    def get_color(self) -> pg.Color:
+        return self.COLOR_DEFAULT  # TODO
+
     def update_image(self):
+        self.color = self.get_color()
+
+        self.image.fill(self.color)
         self.rect.x, self.rect.y = self.pos
 
     def resolve_collision(
@@ -126,13 +144,13 @@ class Player(pg.sprite.Sprite):
     def handle_collisions(self):
         collided = {'x': False, 'y': False}
 
-        # Horizontal movement
+        # For testing horizontal movement
         player_xvel_rect = pg.Rect(
             self.pos.x + self.vel.x, self.pos.y,
             self.WIDTH, self.HEIGHT
         )
 
-        # Vertical movement
+        # For testing vertical movement
         player_yvel_rect = pg.Rect(
             self.pos.x, self.pos.y + self.vel.y,
             self.WIDTH, self.HEIGHT
@@ -189,7 +207,7 @@ class Player(pg.sprite.Sprite):
             self.pos.y += self.vel.y
 
     def update_state(self):
-        pass
+        raise NotImplementedError
 
     def just_grounded(self):
         return (not self.was_grounded) and self.is_grounded
