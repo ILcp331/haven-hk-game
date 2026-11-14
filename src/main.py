@@ -1,6 +1,6 @@
 import pygame as pg
 
-from .constants import FPS, WIDTH, HEIGHT
+from .constants import FPS, WIDTH, HEIGHT, BORDER_WALL_THICKNESS
 from .sprites.player import Player
 from .sprites.wall import Wall
 
@@ -23,17 +23,49 @@ class Game:
         self.walls = pg.sprite.Group()
 
         # Sprites
-        self.player = Player((0, 0), self.sprites)
+        self.player = Player(self.walls, (64, 64), self.sprites)
 
         # Level
-        Wall((0, HEIGHT - 128), (WIDTH, 128), self.sprites, self.walls)
+        self.place_border_walls()
+
+    def place_border_walls(self):
+        # Ceiling
+        Wall(
+            (0, 0),
+            (WIDTH, BORDER_WALL_THICKNESS),
+            self.sprites, self.walls
+        )
+
+        # Floor
+        Wall(
+            (0, HEIGHT - BORDER_WALL_THICKNESS),
+            (WIDTH, BORDER_WALL_THICKNESS),
+            self.sprites, self.walls
+        )
+
+        # Left Wall
+        Wall(
+            (0, 0),
+            (BORDER_WALL_THICKNESS, HEIGHT),
+            self.sprites, self.walls
+        )
+        # Right Wall
+        Wall(
+            (WIDTH - BORDER_WALL_THICKNESS, 0),
+            (BORDER_WALL_THICKNESS, HEIGHT),
+            self.sprites, self.walls
+        )
 
     def update(self):
         self.sprites.update()
         self.sprites.draw(self.window)
 
     def debug_update(self):
-        pass
+        print(
+            f'(FPS: {self.clock.get_fps():.2f}) '
+            f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}; '
+            f'Walls num: {len(self.walls)}'
+        )
 
     def mainloop(self):
         self.window.fill((255, 255, 255))
