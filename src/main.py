@@ -15,7 +15,8 @@ class Game:
     HEIGHT = 720
 
     BG_COLOR = (255, 255, 255)
-    DEBUG_COLOR = (96, 255, 96)
+    DEBUG_TEXT_COLOR = (96, 255, 96)
+    DEBUG_BG_COLOR = (0, 0, 0, 160)
 
     DEBUG_FONT = pg.font.SysFont('Consolas', 16)
 
@@ -84,8 +85,8 @@ class Game:
             (8, 8),
             self.DEBUG_FONT,
             self.debug_lines,
-            self.DEBUG_COLOR,
-            background=(0, 0, 0, 192),
+            self.DEBUG_TEXT_COLOR,
+            background=self.DEBUG_BG_COLOR,
             alignment='left',
         )
 
