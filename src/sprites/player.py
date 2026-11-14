@@ -55,7 +55,7 @@ class Player(pg.sprite.Sprite):
     FRICTION = 0.875
     GRAVITY = 1
     TERMINAL_VELOCITY = 9999
-    BOUNCE_ENERGY_LOSS = 2.5
+    BOUNCE_ENERGY_LOSS = 0
 
     KEYBINDS = Keybind(
         move_left  = pg.K_LEFT,
@@ -143,7 +143,7 @@ class Player(pg.sprite.Sprite):
             self.vel.x = 0
 
         elif direction == 'y':
-            # Was moving down
+            # Was moving down (landing)
             if self.vel.y > 0:
                 new_pos.y = wall_rect.top - self.HEIGHT
 
@@ -158,7 +158,9 @@ class Player(pg.sprite.Sprite):
                 new_pos.y = wall_rect.bottom
 
             # Y offset imposed by resolving collision with floor
+            print(new_pos.y, self.pos.y + self.vel.y)
             delta.y = new_pos.y - (self.pos.y + self.vel.y)
+            print(delta.y)
 
             self.vel.y = 0
 

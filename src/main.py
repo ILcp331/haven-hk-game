@@ -39,7 +39,7 @@ class Game:
         # Sprites
         self.player = Player(
             self.walls,
-            (self.WIDTH / 2 - Player.WIDTH / 2, BORDER_WALL_THICKNESS + Player.HEIGHT),
+            (self.WIDTH / 2 - Player.WIDTH / 2, BORDER_WALL_THICKNESS + 256),
             self.sprites
         )
 
