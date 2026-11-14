@@ -260,9 +260,10 @@ class Player(pg.sprite.Sprite):
             self.pos.y += self.vel.y
 
         # Apply compensation for any y offsets due to collisions if we are about to bounce
-        # FIXME: Doesn't work as intended. Compensation system also broken
-        if self.actions.bounce:
-        #     self.pos.y += self.bounce_compensate_amount
+        if self.actions.bounce or self.just_entered_falling():
+            print(f'applied {self.bounce_compensate_amount} ({self.pos.y} -> {self.pos.y + self.bounce_compensate_amount})')
+
+            self.pos.y += self.bounce_compensate_amount
             self.bounce_compensate_amount = 0
 
         return self.get_pos_change(self.pos)
@@ -272,6 +273,9 @@ class Player(pg.sprite.Sprite):
 
     def just_grounded(self):
         return (not self.was_grounded) and self.is_grounded
+
+    def just_entered_falling(self):
+        return self.was_grounded and (not self.is_grounded)
 
     def get_pos_change(self, new_pos: pg.Vector2) -> pg.Vector2:
         return new_pos - self.last_pos
