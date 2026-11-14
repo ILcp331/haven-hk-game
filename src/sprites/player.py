@@ -122,52 +122,39 @@ class Player(pg.sprite.Sprite):
 
     def resolve_collision(
         self,
+        player_rect: pg.Rect,
         wall_rect: pg.Rect,
         direction: Literal['x', 'y']
     ) -> pg.Vector2:
-        new_pos = self.pos + self.vel
+        new_rect = player_rect.copy()
         delta = pg.Vector2(0, 0)  # Using an object due to scope limitations
 
         if direction == 'x':
-            # Was moving right
             if self.vel.x > 0:
-                new_pos.x = wall_rect.left - self.WIDTH
+                delta.x = wall_rect.left - new_rect.right
 
-            # Was moving left
-            else:
-                new_pos.x = wall_rect.right
+            elif self.vel.x < 0:
+                delta.x = wall_rect.right - new_rect.left
 
-            # X offset imposed by resolving collision with wall
-            delta.x = self.get_pos_change(new_pos).x
-
-            self.vel.x = 0
+            new_rect.x += delta.x
 
         elif direction == 'y':
-            # Was moving down (landing)
             if self.vel.y > 0:
-                new_pos.y = wall_rect.top - self.HEIGHT
+                delta.y = wall_rect.top - new_rect.bottom
 
                 self.is_grounded = True
-
-                # Only update stored bounce velocity on the frame the player lands
                 if self.just_grounded():
                     self.stored_yvel += -(self.vel.y - self.BOUNCE_ENERGY_LOSS)
 
-            # Was moving up
-            else:
-                new_pos.y = wall_rect.bottom
+            elif self.vel.y < 0:
+                delta.y = wall_rect.bottom - new_rect.top
 
-            # Y offset imposed by resolving collision with floor
-            print(new_pos.y, self.pos.y + self.vel.y)
-            delta.y = new_pos.y - (self.pos.y + self.vel.y)
-            print(delta.y)
-
-            self.vel.y = 0
+            new_rect.y += delta.y
 
         else:
             raise ValueError(f'direction argument must be either "x" or "y". Got {direction}')
 
-        self.pos = new_pos.copy()
+        self.pos.x, self.pos.y = new_rect.x, new_rect.y
 
         return delta
 
@@ -191,13 +178,13 @@ class Player(pg.sprite.Sprite):
 
             if player_xvel_rect.colliderect(wall_rect):
                 collided['x'] = True
-                dx, _ = self.resolve_collision(wall_rect, 'x')
+                dx, _ = self.resolve_collision(player_xvel_rect, wall_rect, 'x')
 
                 # Currently no need to compensate for collision dx in any way
 
             if player_yvel_rect.colliderect(wall_rect):
                 collided['y'] = True
-                _, dy = self.resolve_collision(wall_rect, 'y')
+                _, dy = self.resolve_collision(player_yvel_rect, wall_rect, 'y')
 
                 # We need to compensate in the opposite direction of collision dy
                 self.bounce_compensate_amount += -dy
