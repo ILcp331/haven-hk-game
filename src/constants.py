@@ -2,3 +2,5 @@ FPS = 60
 
 WIDTH = 800
 HEIGHT = 800
+
+BG_COLOR = (255, 255, 255)

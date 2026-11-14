@@ -1,6 +1,7 @@
 import pygame as pg
 
 from .constants import FPS, WIDTH, HEIGHT
+from .sprites.player import Player
 
 pg.init()
 
@@ -14,18 +15,21 @@ class Game:
         pg.display.set_caption('Hackclub Haven')
 
         self.running = True
-
         self.allow_debug = allow_debug
         self.debug_active = False
 
+        self.sprites = pg.sprite.Group()
+        self.player = Player((0, 0), self.sprites)
+
     def update(self):
-        pass
+        self.sprites.update()
+        self.sprites.draw(self.window)
 
     def debug_update(self):
         pass
 
     def mainloop(self):
-        self.window.fill((0, 0, 0))
+        self.window.fill((255, 255, 255))
 
         for e in pg.event.get():
             if e.type == pg.QUIT:
