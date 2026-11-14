@@ -1,6 +1,6 @@
 import pygame as pg
 
-from .constants import FPS, WIDTH, HEIGHT, BORDER_WALL_THICKNESS
+from .constants import BORDER_WALL_THICKNESS
 from .sprites.player import Player
 from .sprites.wall import Wall
 
@@ -8,8 +8,15 @@ pg.init()
 
 
 class Game:
+    FPS = 60
+
+    WIDTH = 1280
+    HEIGHT = 720
+
+    BG_COLOR = (255, 255, 255)
+
     def __init__(self, *, allow_debug: bool = False):
-        self.window = pg.display.set_mode((WIDTH, HEIGHT))
+        self.window = pg.display.set_mode((self.WIDTH, self.HEIGHT))
         self.clock = pg.time.Clock()
         self.frames = 0
 
@@ -32,27 +39,27 @@ class Game:
         # Ceiling
         Wall(
             (0, 0),
-            (WIDTH, BORDER_WALL_THICKNESS),
+            (self.WIDTH, BORDER_WALL_THICKNESS),
             self.sprites, self.walls
         )
 
         # Floor
         Wall(
-            (0, HEIGHT - BORDER_WALL_THICKNESS),
-            (WIDTH, BORDER_WALL_THICKNESS),
+            (0, self.HEIGHT - BORDER_WALL_THICKNESS),
+            (self.WIDTH, BORDER_WALL_THICKNESS),
             self.sprites, self.walls
         )
 
         # Left Wall
         Wall(
             (0, 0),
-            (BORDER_WALL_THICKNESS, HEIGHT),
+            (BORDER_WALL_THICKNESS, self.HEIGHT),
             self.sprites, self.walls
         )
         # Right Wall
         Wall(
-            (WIDTH - BORDER_WALL_THICKNESS, 0),
-            (BORDER_WALL_THICKNESS, HEIGHT),
+            (self.WIDTH - BORDER_WALL_THICKNESS, 0),
+            (BORDER_WALL_THICKNESS, self.HEIGHT),
             self.sprites, self.walls
         )
 
@@ -62,8 +69,9 @@ class Game:
 
     def debug_update(self):
         print(
-            f'(FPS: {self.clock.get_fps():.2f}) '
-            f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}; '
+            f'\n'
+            f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)\n'
+            f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}\n'
             f'Walls num: {len(self.walls)}'
         )
 
@@ -82,6 +90,6 @@ class Game:
         self.debug_update()
 
         pg.display.update()
-        self.clock.tick(FPS)
+        self.clock.tick(self.FPS)
 
         self.frames += 1

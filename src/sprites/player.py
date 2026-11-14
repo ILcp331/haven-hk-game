@@ -3,7 +3,6 @@ from typing import Literal
 import pygame as pg
 
 from ..utils.keybind import Keybind
-from .wall import Wall
 
 pg.init()
 
@@ -96,7 +95,6 @@ class Player(pg.sprite.Sprite):
         for wall in self.walls:
             wall_rect = pg.Rect(wall.pos.x, wall.pos.y, wall.size[0], wall.size[1])
 
-            # Collisions are tested with future position before applying velocity onto position
             if player_xvel_rect.colliderect(wall_rect):
                 collided['x'] = True
                 self.pos = self.resolve_collision(wall_rect, 'x')
@@ -121,8 +119,12 @@ class Player(pg.sprite.Sprite):
         self.vel.y += self.GRAVITY
         self.vel.y = min(self.vel.y, self.TERMINAL_VELOCITY)
 
+        # Tests for collisions at a new position based on velocity, each axis tested independently
+        # If a collision is made, player snaps to colliding wall
+        # If a collision is not made, velocity is applied to pos later
         collided_by_dir = self.handle_collisions()
 
+        # Apply velocity for axes where a collision was not detected
         if not collided_by_dir['x']:
             self.pos.x += self.vel.x
 
