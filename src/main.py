@@ -2,6 +2,7 @@ import pygame as pg
 
 from .constants import FPS, WIDTH, HEIGHT
 from .sprites.player import Player
+from .sprites.wall import Wall
 
 pg.init()
 
@@ -19,7 +20,13 @@ class Game:
         self.debug_active = False
 
         self.sprites = pg.sprite.Group()
+        self.walls = pg.sprite.Group()
+
+        # Sprites
         self.player = Player((0, 0), self.sprites)
+
+        # Level
+        Wall((0, HEIGHT - 128), (WIDTH, 128), self.sprites, self.walls)
 
     def update(self):
         self.sprites.update()
