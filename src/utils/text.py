@@ -10,9 +10,9 @@ def draw_line(
     pos: tuple[float, float] | pg.Vector2,
     font: pg.font.Font,
     line: str,
-    color: tuple[int, int, int],
+    color: tuple[int, int, int] | pg.Color,
     *,
-    background: tuple[int, int, int, int] = (0, 0, 0, 0),
+    background: tuple[int, int, int, int] | pg.Color = pg.Color(0, 0, 0, 0),
     alignment: Literal['left', 'centered', 'right'] = 'left',
 ) -> None:
     """Draws a line of text on a surface.
@@ -22,8 +22,8 @@ def draw_line(
         pos (tuple[float, float] | pg.Vector2): The position of the text.
         font (pg.font.Font): The font object used to render each line.
         line (str): The string to draw.
-        color (tuple[int, int, int]): The color of the text.
-        background (tuple[int, int, int, int], optional): RGBA for the text's background. \
+        color (tuple[int, int, int] | pg.Color): The color of the text.
+        background (tuple[int, int, int, int] | pg.Color, optional): RGBA for the text's background. \
         Defaults to (0, 0, 0, 0).
         alignment (Literal['left', 'centered', 'right'], optional): The alignment of the text at \
         the provided position. Defaults to 'left'.
@@ -53,10 +53,10 @@ def draw_lines(
     start_pos: tuple[float, float] | pg.Vector2,
     font: pg.font.Font,
     lines: list[str],
-    color: tuple[int, int, int],
+    color: tuple[int, int, int] | pg.Color,
     margin: float = 2,
     *,
-    background: tuple[int, int, int, int] = (0, 0, 0, 0),
+    background: tuple[int, int, int, int] | pg.Color = pg.Color(0, 0, 0, 0),
     alignment: Literal['left', 'centered', 'right'] = 'left',
 ) -> None:
     """Draws multiple lines of text on a surface.
@@ -68,12 +68,10 @@ def draw_lines(
         start_pos (tuple[float, float] | pg.Vector2): The position of the text.
         font (pg.font.Font): The font object used to render each line.
         lines (list[str]): A list of strings to draw. No '\\n' escape sequences are needed.
-        color (tuple[int, int, int]): The color of the text.
+        color (tuple[int, int, int] | pg.Color): The color of the text.
         margin (float, optional): Margin between each line. Defaults to 2.
-        background (tuple[int, int, int, int], optional): RGBA for the text's background. \
-        Defaults to (0, 0, 0, 0).
-        alignment (Literal['left', 'centered', 'right'], optional): The alignment of the lines of \
-        text at the provided position. Defaults to 'left'.
+        background (tuple[int, int, int, int] | pg.Color, optional): RGBA for the text's background. Defaults to (0, 0, 0, 0).
+        alignment (Literal['left', 'centered', 'right'], optional): The alignment of the lines of text at the provided position. Defaults to 'left'.
     """
     current_pos = pg.Vector2(start_pos)
 

@@ -14,9 +14,9 @@ class Game:
     WIDTH = 1280
     HEIGHT = 720
 
-    BG_COLOR = (255, 255, 255)
-    DEBUG_TEXT_COLOR = (96, 255, 96)
-    DEBUG_BG_COLOR = (0, 0, 0, 160)
+    BG_COLOR = pg.Color(255, 255, 255)
+    DEBUG_TEXT_COLOR = pg.Color(96, 255, 96)
+    DEBUG_BG_COLOR = pg.Color(0, 0, 0, 160)
 
     DEBUG_FONT = pg.font.SysFont('Consolas', 16)
 

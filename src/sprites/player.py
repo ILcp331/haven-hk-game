@@ -40,7 +40,7 @@ class PlayerState(Enum):
 class Player(pg.sprite.Sprite):
     WIDTH = 32
     HEIGHT = 32
-    COLOR = (0, 0, 0)
+    COLOR = pg.Color(0, 0, 0)
 
     KEYBINDS = Keybind(
         move_left  = pg.K_LEFT,

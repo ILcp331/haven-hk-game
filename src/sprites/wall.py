@@ -4,7 +4,7 @@ pg.init()
 
 
 class Wall(pg.sprite.Sprite):
-    COLOR = (128, 128, 128)
+    COLOR = pg.Color(128, 128, 128)
 
     def __init__(
         self,
