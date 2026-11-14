@@ -44,10 +44,10 @@ class Player(pg.sprite.Sprite):
 
     # For the color indicator of stored bounce height
     COLOR_DEFAULT = pg.Color(0, 0, 0)
-    COLOR_GRAD_S = 60
-    COLOR_GRAD_L = 100
-    COLOR_GRAD_H_RANGE = (0, 135)
-    COLOR_GRAD_VEL_RANGE = (0, -30)
+    COLOR_GRAD_S = 100
+    COLOR_GRAD_L = 60
+    COLOR_GRAD_H_RANGE = (0, 120)
+    COLOR_GRAD_VEL_RANGE = (-10, -30)
 
     # Physics
     ACCELERATION = 1
@@ -90,12 +90,29 @@ class Player(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = self.pos
 
-    def get_color(self) -> pg.Color:
-        return self.COLOR_DEFAULT  # TODO
+    def update_color(self):
+        # Only update the color indicator when it is relevant (on ground)
+        if not self.is_grounded:
+            return
+
+        hue_change = self.COLOR_GRAD_H_RANGE[1] - self.COLOR_GRAD_H_RANGE[0]
+        vel_change = self.COLOR_GRAD_VEL_RANGE[1] - self.COLOR_GRAD_VEL_RANGE[0]
+
+        # Multiplier from 0.0 to 1.0
+        vel_factor = (self.stored_yvel - self.COLOR_GRAD_VEL_RANGE[0]) / vel_change
+
+        lower_cap = max(0, self.COLOR_GRAD_H_RANGE[0])
+        upper_cap = min(self.COLOR_GRAD_H_RANGE[1], 360)
+
+        hue = vel_factor * hue_change + self.COLOR_GRAD_H_RANGE[0]
+        hue = max(lower_cap, hue)
+        hue = min(hue, upper_cap)
+
+        self.color = pg.Color.from_hsla(hue, self.COLOR_GRAD_S, self.COLOR_GRAD_L, 0)
+
 
     def update_image(self):
-        self.color = self.get_color()
-
+        self.update_color()
         self.image.fill(self.color)
         self.rect.x, self.rect.y = self.pos
 
@@ -186,7 +203,7 @@ class Player(pg.sprite.Sprite):
 
         if self.actions.bounce:
             if self.is_grounded:
-                self.vel.y = self.stored_yvel
+                self.vel.y = self.stored_yvel  # Activate stored velocity
 
     def update_physics(self):
         self.vel.x *= self.FRICTION
@@ -218,7 +235,7 @@ class Player(pg.sprite.Sprite):
         self.update_actions()
         self.perform_actions()
         self.update_physics()
-        self.update_state()
+
         self.update_image()
 
         self.was_grounded = self.is_grounded

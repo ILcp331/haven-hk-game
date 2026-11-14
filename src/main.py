@@ -38,7 +38,7 @@ class Game:
         # Sprites
         self.player = Player(
             self.walls,
-            (self.WIDTH / 2 - Player.WIDTH / 2, 64),
+            (self.WIDTH / 2 - Player.WIDTH / 2, BORDER_WALL_THICKNESS + Player.HEIGHT),
             self.sprites
         )
 
@@ -83,11 +83,16 @@ class Game:
         self.sprites.draw(self.window)
 
     def debug_update(self):
+        vel_change = self.player.COLOR_GRAD_VEL_RANGE[1] - self.player.COLOR_GRAD_VEL_RANGE[0]
+        vel_factor = (self.player.stored_yvel - self.player.COLOR_GRAD_VEL_RANGE[0]) / vel_change
+
         self.debug_lines = [
-            f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)\n'
-            f'Sprites: {len(self.sprites)} | Walls: {len(self.walls)}\n'
-            f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}\n'
-            f'        grounded: {self.player.is_grounded} | stored: {self.player.stored_yvel}'
+            f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)',
+            f'Sprites: {len(self.sprites)} | Walls: {len(self.walls)}',
+            f'Player: pos{round(self.player.pos, 2)} vel{round(self.player.vel, 2)}',
+            f'        grounded: {self.player.is_grounded}',
+            f'        stored: {self.player.stored_yvel} ({vel_factor * 100:.2f}%)',
+            f'        hue: {self.player.color.hsla[0]:.2f}/{Player.COLOR_GRAD_H_RANGE[1]}'
         ]
 
         draw_lines(
