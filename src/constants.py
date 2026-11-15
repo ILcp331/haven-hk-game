@@ -1,5 +1,5 @@
 from pathlib import Path
-import sys, os
+import sys
 
 SPEED = 1
 FPS = 60 if SPEED <= 1 else round(60 * SPEED)
