@@ -78,6 +78,7 @@ class Player(pg.sprite.Sprite):
         self.objects = objects
 
         # Core
+        print(pos)
         self.pos = pg.Vector2(pos)
         self.vel = pg.Vector2(0, 0)
         self.bounce_compensate_amount = 0

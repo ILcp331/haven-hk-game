@@ -1,5 +1,6 @@
-#start=128,128
+#name testing level
+#start 128,128
 #gen border
 
-wall 16,500,600,64
-bpad 890,624,128,64
+wall 16,500,600,64,platform
+bpad 890,624,128,64,bpad_r
