@@ -43,7 +43,7 @@ class Game:
         self.objects = pg.sprite.Group()
 
         # Sprites
-        self.player = Player(self.walls, self.PLAYER_INIT_POS, self.sprites)
+        self.player = Player(self.walls, self.objects, self.PLAYER_INIT_POS, self.sprites)
 
         # Level
         self.place_border_walls()

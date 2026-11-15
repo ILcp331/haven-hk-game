@@ -286,8 +286,18 @@ class Player(pg.sprite.Sprite):
 
         return self.get_pos_change(self.pos)
 
+    def bouncepad_action(self, bpad: Bouncepad):
+        self.bounce(bpad.strength)
+
     def handle_obj_collisions(self):
-        pass
+        # Object collision jump table
+        OBJECT_COLIS_ACTIONS = {
+            Bouncepad: (self.bouncepad_action, ()),
+        }
+
+        for obj in self.objects:
+            action, args = OBJECT_COLIS_ACTIONS[type(obj)]
+            action(obj, *args)
 
     def update_state(self):
         raise NotImplementedError

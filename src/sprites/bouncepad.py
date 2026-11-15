@@ -12,6 +12,7 @@ class Bouncepad(pg.sprite.Sprite):
         self,
         pos: tuple[float, float],
         size: tuple[float, float],
+        strength: float,
         *groups,
         **kwargs
     ):
@@ -25,6 +26,8 @@ class Bouncepad(pg.sprite.Sprite):
 
         self.pos = pg.Vector2(pos)
         self.size = size
+
+        self.strength = strength
 
         self.image = pg.Surface(size)
         self.image.fill(self.COLOR)
