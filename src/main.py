@@ -1,26 +1,16 @@
+from pathlib import Path
+
 import pygame as pg
 
-from .constants import BORDER_WALL_THICKNESS
+from .constants import WIDTH, HEIGHT, SPEED, FPS, BORDER_WALL_THICKNESS, LEVEL_PATHS
 from .utils.text import draw_lines
+from .utils.level import LevelLoader, LevelInfo
 from .sprites.player import Player
-from .sprites.wall import Wall
-from .sprites.bouncepad import Bouncepad
 
 pg.init()
 
 
 class Game:
-    SPEED = 1
-    FPS = 60 if SPEED <= 1 else round(60 * SPEED)
-
-    WIDTH = 1280
-    HEIGHT = 720
-
-    PLAYER_INIT_POS = (
-        WIDTH / 2 - Player.WIDTH / 2,
-        BORDER_WALL_THICKNESS + 256
-    )
-
     BG_COLOR = pg.Color(255, 255, 255)
     DEBUG_TEXT_COLOR = pg.Color(96, 255, 96)
     DEBUG_BG_COLOR = pg.Color(0, 0, 0, 160)
@@ -28,7 +18,7 @@ class Game:
     DEBUG_FONT = pg.font.SysFont('Consolas', 16)
 
     def __init__(self, *, allow_debug: bool = False):
-        self.window = pg.display.set_mode((self.WIDTH, self.HEIGHT))
+        self.window = pg.display.set_mode((WIDTH, HEIGHT))
         self.clock = pg.time.Clock()
         self.frames = 0
 
@@ -43,68 +33,25 @@ class Game:
         self.sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         self.objects = pg.sprite.Group()
+        self.player = None
+        self.lvl_info = LevelInfo()
 
-        # Sprites
-        self.player = Player(self.walls, self.objects, self.PLAYER_INIT_POS, self.sprites)
-
-        # Level
-        self.place_border_walls()
-        Wall(
-            (0, self.HEIGHT - 256),
-            (600, BORDER_WALL_THICKNESS),
-            self.sprites, self.walls,
-            id='platform'
-        )
-
-        Bouncepad(
-            (889, self.HEIGHT - BORDER_WALL_THICKNESS - 32),
-            (256, BORDER_WALL_THICKNESS),
-            512,
-            self.sprites, self.objects,
-            id='bpad_r'
-        )
-
-    def place_border_walls(self):
-        Wall(
-            (0, 0),
-            (self.WIDTH, BORDER_WALL_THICKNESS),
-            self.sprites, self.walls,
-            id='ceiling',
-        )
-
-        Wall(
-            (0, self.HEIGHT - BORDER_WALL_THICKNESS),
-            (self.WIDTH, BORDER_WALL_THICKNESS),
-            self.sprites, self.walls,
-            id='floor',
-        )
-
-        Wall(
-            (0, 0),
-            (BORDER_WALL_THICKNESS, self.HEIGHT),
-            self.sprites, self.walls,
-            id='leftw',
-        )
-
-        Wall(
-            (self.WIDTH - BORDER_WALL_THICKNESS, 0),
-            (BORDER_WALL_THICKNESS, self.HEIGHT),
-            self.sprites, self.walls,
-            id='rightw',
-        )
+        # Load Level
+        self.reset_scene('testing')
 
     def update(self):
-        if self.frames % round(1 / self.SPEED) == 0:
+        if self.frames % round(1 / SPEED) == 0:
             self.sprites.update()
 
         self.sprites.draw(self.window)
 
     def debug_update(self):
         bheight_change = Player.COLOR_GRAD_BHEIGHT_RANGE[1] - Player.COLOR_GRAD_BHEIGHT_RANGE[0]
-        bheight_factor = (self.player.fall_dist - Player.COLOR_GRAD_BHEIGHT_RANGE[0]) / bheight_change
+        bheight_factor = (self.player.fall_dist -
+                          Player.COLOR_GRAD_BHEIGHT_RANGE[0]) / bheight_change
 
         self.debug_lines_left = [
-            f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)',
+            f'Frame {self.frames} ({self.clock.get_fps():.2f}/{FPS} fps)',
             f'Sprites: {len(self.sprites)} | Walls: {len(self.walls)}',
             f'Player: pos {round(self.player.pos, 2)}',
             f'        vel {round(self.player.vel, 2)}',
@@ -116,6 +63,8 @@ class Game:
         ]
 
         self.debug_lines_center = [
+            f'[{self.lvl_info.level_name}]',
+            '',
             'Mouse position',
             f'{pg.mouse.get_pos()}',
             '===== PINNED =====',
@@ -129,7 +78,7 @@ class Game:
 
         self.debug_lines_right = [
             'Init conditions',
-            f'player init at {self.PLAYER_INIT_POS}',
+            f'player init at {self.lvl_info.start_pos}',
             f'player size: {Player.WIDTH}x{Player.HEIGHT}',
             'player physics',
             f'{Player.GRAVITY} = grav',
@@ -151,7 +100,7 @@ class Game:
 
         draw_lines(
             self.window,
-            (self.WIDTH / 2, 8),
+            (WIDTH / 2, 8),
             self.DEBUG_FONT,
             self.debug_lines_center,
             self.DEBUG_TEXT_COLOR,
@@ -161,7 +110,7 @@ class Game:
 
         draw_lines(
             self.window,
-            (self.WIDTH - 8, 8),
+            (WIDTH - 8, 8),
             self.DEBUG_FONT,
             self.debug_lines_right,
             self.DEBUG_TEXT_COLOR,
@@ -171,6 +120,32 @@ class Game:
 
         # Logs
         print(f'Pinned: {self.debug_mouse_pinned_pos}')
+
+    def load_level(self, level_id: str):
+        path = LEVEL_PATHS[level_id]
+
+        loader = LevelLoader(
+            path,
+            self.lvl_info,
+            self.sprites,
+            self.walls,
+            self.objects
+        )
+        loader.parse_level()
+
+    def reset_scene(self, level_id: str):
+        self.sprites.empty()
+        self.walls.empty()
+        self.objects.empty()
+
+        self.load_level(level_id)
+
+        self.player = Player(
+            self.walls,
+            self.objects,
+            self.lvl_info.start_pos,
+            self.sprites
+        )
 
     def mainloop(self):
         print(f'======== FRAME {self.frames} ========')
@@ -187,12 +162,15 @@ class Game:
                 if e.key == pg.K_BACKSPACE:
                     self.debug_mouse_pinned_pos = []
 
+                if e.key == pg.K_r:
+                    self.reset_scene('testing')
+
         self.update()
 
         if self.debug_active:
             self.debug_update()
 
         pg.display.update()
-        self.clock.tick(self.FPS)
+        self.clock.tick(FPS)
 
         self.frames += 1
