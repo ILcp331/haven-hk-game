@@ -16,11 +16,11 @@ class Wall(pg.sprite.Sprite):
         **kwargs
     ):
         super().__init__(*groups)
-        self.id = f'wall{self.wall_index}'
+
         if 'id' in kwargs:
             self.id = kwargs['id']
         else:
-            self.id = f'wall{self.wall_index}'
+            self.id = f'wall_{self.wall_index}'
             self.wall_index += 1
 
         self.pos = pg.Vector2(pos)
