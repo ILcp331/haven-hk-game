@@ -56,6 +56,7 @@ class Player(pg.sprite.Sprite):
     GRAVITY = 1
     TERMINAL_VELOCITY = 9999
     BOUNCE_ENERGY_LOSS = 0
+    BOUNCE_CORRECTION_COEF = 1.017625
 
     KEYBINDS = Keybind(
         move_left  = pg.K_LEFT,
@@ -242,7 +243,11 @@ class Player(pg.sprite.Sprite):
                 self.bounce()
 
     def calc_bounce_vel(self, height_px: float) -> float:
-        return -sqrt(2 * self.GRAVITY * height_px) + self.BOUNCE_ENERGY_LOSS
+        # v = sqrt(2gh)
+        bounce_vel = sqrt(2 * self.GRAVITY * height_px) - self.BOUNCE_ENERGY_LOSS
+        bounce_vel *= self.BOUNCE_CORRECTION_COEF  # Correct error due to euler's method
+
+        return -bounce_vel  # Negated because negative = up
 
     def bounce(self, extra_height: float = 0):
         self.vel.y = self.calc_bounce_vel(self.fall_dist + extra_height)
@@ -256,10 +261,9 @@ class Player(pg.sprite.Sprite):
 
         # Tests for collisions at a new position based on velocity, each axis tested independently
         # If a collision is made, player snaps to colliding wall
-        # If a collision is not made, velocity is applied to pos later
         collided_by_dir = self.handle_collisions()
 
-        # Apply velocity for axes where a collision was not detected
+        # If a collision is not made, velocity is applied to pos here
         if not collided_by_dir['x']:
             self.pos.x += self.vel.x
 
@@ -268,13 +272,14 @@ class Player(pg.sprite.Sprite):
             self.pos.y += self.vel.y
 
         if self.just_started_falling():
-            self.fell_from_y = self.pos.y
+            # Needs to account for this frame's gravity
+            self.fell_from_y = self.pos.y - self.GRAVITY
 
-        # Apply compensation for any y offsets due to collisions if we are about to bounce or fall
+        # Apply compensation for any y offsets due to collisions if we are about to bounce
+        # FIXME: For some reason, the compensation makes bounce vel calculations worse
         if self.actions.bounce:
-            print(f'applied comp of {self.bounce_compensate_amount} ({self.pos.y:.2f} -> {self.pos.y + self.bounce_compensate_amount:.2f})')
-
-            self.pos.y += self.bounce_compensate_amount
+            # print(f'applied comp of {self.bounce_compensate_amount} ({self.pos.y:.2f} -> {self.pos.y + self.bounce_compensate_amount:.2f})')
+            # self.pos.y += self.bounce_compensate_amount
             self.bounce_compensate_amount = 0
 
         return self.get_pos_change(self.pos)
@@ -295,7 +300,7 @@ class Player(pg.sprite.Sprite):
         return new_pos - self.last_pos
 
     def update(self):
-        print(f'y from init {self.pos.y - 32 - 256:.2f}, yvel {self.vel.y:.2f}')
+        print(f'ypos {self.pos.y:.2f}, yvel {self.vel.y:.2f}')
         self.actions.clear()
 
         self.update_actions()
