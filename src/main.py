@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pygame as pg
 
 from .constants import WIDTH, HEIGHT, SPEED, FPS, BORDER_WALL_THICKNESS, LEVEL_PATHS
