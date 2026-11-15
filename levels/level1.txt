@@ -1,10 +1,15 @@
 #name testing level
 #start 128,128
-#gen border
+#gen border,32,1011
 
+wall 0,688,684,32,floor
 wall 30,160,256,32,platform_start
-wall 380,11,32,500,wall1
-wall 684,300,128,512,elevated
+
+wall 380,11,32,500,wall_top
 wall 407,480,192,32,platform_troll
+wall 684,300,128,512,wall_mid
+
 wall 1114,150,128,24,finish
-bpad 890,672,128,32,150,bpad_r
+slme 812,672,96,64,slime_l
+slme 1000,672,256,64,slime_r
+bpad 890,640,128,128,150,bpad

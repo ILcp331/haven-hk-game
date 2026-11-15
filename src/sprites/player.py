@@ -6,6 +6,7 @@ from typing import Literal
 import pygame as pg
 
 from .bouncepad import Bouncepad
+from .slime import SlimeWall
 
 pg.init()
 
@@ -132,7 +133,9 @@ class Player(pg.sprite.Sprite):
         self,
         player_rect: pg.FRect,
         wall_rect: pg.FRect,
-        direction: Literal['x', 'y']
+        direction: Literal['x', 'y'],
+        *,
+        is_slime: bool = False
     ) -> pg.Vector2:
         new_rect = player_rect.copy()
         delta = pg.Vector2(0, 0)  # Using an object due to scope limitations
@@ -157,7 +160,13 @@ class Player(pg.sprite.Sprite):
                 if self.just_grounded():
                     new_y = new_rect.y + delta.y
 
-                    self.fall_dist += new_y - self.fell_from_y
+                    # If we fell on slime, clear any stored velocity
+                    if not is_slime:
+                        self.fall_dist += new_y - self.fell_from_y
+
+                    else:
+                        self.fall_dist = 0
+
                     self.fell_from_y = new_y
 
             elif self.vel.y < 0:
@@ -215,7 +224,9 @@ class Player(pg.sprite.Sprite):
                 print()
 
                 collided['y'] = True
-                _, dy = self.resolve_wall_collision(player_yvel_rect, wall_rect, 'y')
+
+                is_slime = isinstance(wall, SlimeWall)
+                _, dy = self.resolve_wall_collision(player_yvel_rect, wall_rect, 'y', is_slime=is_slime)
 
                 # We need to compensate in the opposite direction of collision dy
                 self.bounce_compensate_amount += -dy

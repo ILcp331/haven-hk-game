@@ -4,3 +4,4 @@
 
 wall 16,500,600,64,platform_u
 bpad 890,672,128,32,300,bpad_r
+slme 100,677,256,32,slime

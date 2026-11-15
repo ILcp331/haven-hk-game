@@ -4,9 +4,9 @@ from dataclasses import dataclass
 import pygame as pg
 
 from ..constants import WIDTH, HEIGHT, BORDER_WALL_THICKNESS
-from ..sprites.player import Player
 from ..sprites.wall import Wall
 from ..sprites.bouncepad import Bouncepad
+from ..sprites.slime import SlimeWall
 
 pg.init()
 
@@ -25,6 +25,7 @@ class LevelLoader:
 
     SPRITE_WALL = 'wall '
     SPRITE_BPAD = 'bpad '
+    SPRITE_SLIME = 'slme '
 
     ARGS_SEP = ','
     SPRITE_SEP = ' '
@@ -120,10 +121,22 @@ class LevelLoader:
             id=bpad_id,
         )
 
+    def place_slime(self, *raw_args):
+        *configs, wall_id = raw_args
+        x, y, w, h = map(float, configs)
+
+        SlimeWall(
+            (x, y),
+            (w, h),
+            self.sprites, self.walls,
+            id=wall_id,
+        )
+
     def place_x(self, sprite_name: str, *raw_args):
         method_map = {
             'wall': self.place_wall,
             'bpad': self.place_bpad,
+            'slme': self.place_slime,
         }
 
         place_method = method_map[sprite_name]
