@@ -67,11 +67,14 @@ class Player(pg.sprite.Sprite):
     def __init__(
         self,
         walls: pg.sprite.Group,
+        objects: pg.sprite.Group,
         pos: tuple[float, float],
         *groups
     ):
         super().__init__(*groups)
-        self.walls = walls  # Reference to the level walls for collisions
+        # Reference to sprite groups relevant for collision
+        self.walls = walls
+        self.objects = objects
 
         # Core
         self.pos = pg.Vector2(pos)
