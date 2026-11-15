@@ -98,10 +98,27 @@ class LevelLoader:
         generate_method(*raw_args)
 
     def place_wall(self, *raw_args):
-        print(raw_args)
+        *configs, wall_id = raw_args
+        x, y, w, h = map(float, configs)
+
+        Wall(
+            (x, y),
+            (w, h),
+            self.sprites, self.walls,
+            id=wall_id,
+        )
 
     def place_bpad(self, *raw_args):
-        print(raw_args)
+        *configs, bpad_id = raw_args
+        x, y, w, h, strength = map(float, configs)
+
+        Bouncepad(
+            (x, y),
+            (w, h),
+            strength,
+            self.sprites, self.objects,
+            id=bpad_id,
+        )
 
     def place_x(self, sprite_name: str, *raw_args):
         method_map = {

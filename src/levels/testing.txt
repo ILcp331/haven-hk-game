@@ -2,5 +2,5 @@
 #start 128,128
 #gen border
 
-wall 16,500,600,64,platform
-bpad 890,624,128,64,bpad_r
+wall 16,500,600,64,platform_u
+bpad 890,672,128,32,300,bpad_r
