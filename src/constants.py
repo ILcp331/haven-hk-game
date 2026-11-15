@@ -20,5 +20,6 @@ LEVEL_DIR = resource_resolver(Path('levels'))
 ASSETS_DIR = resource_resolver(Path('assets'))
 
 LEVEL_PATHS = {
-    'testing': LEVEL_DIR / 'testing.txt'
+    'testing': LEVEL_DIR / 'testing.txt',
+    'level1': LEVEL_DIR / 'level1.txt'
 }

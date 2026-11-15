@@ -37,7 +37,7 @@ class Game:
         self.lvl_info = LevelInfo()
 
         # Load Level
-        self.reset_scene('testing')
+        self.reset_scene('level1')
 
     def update(self):
         if self.frames % round(1 / SPEED) == 0:
@@ -163,7 +163,7 @@ class Game:
                     self.debug_mouse_pinned_pos = []
 
                 if e.key == pg.K_r:
-                    self.reset_scene('testing')
+                    self.reset_scene('level1')
 
         self.update()
 

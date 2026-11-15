@@ -1,0 +1,10 @@
+#name testing level
+#start 128,128
+#gen border
+
+wall 30,160,256,32,platform_start
+wall 380,11,32,500,wall1
+wall 684,300,128,512,elevated
+wall 407,480,192,32,platform_troll
+wall 1114,150,128,24,finish
+bpad 890,672,128,32,150,bpad_r
