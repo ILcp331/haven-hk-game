@@ -299,9 +299,9 @@ class Player(pg.sprite.Sprite):
         return self.get_pos_change(self.pos)
 
     def bouncepad_action(self, bpad: Bouncepad):
-        self.pos.y = bpad.pos.y - self.HEIGHT
+        self.fall_dist = bpad.rect.top - self.fell_from_y
 
-        self.fall_dist += self.pos.y - self.fell_from_y
+        self.pos.y = bpad.pos.y - self.HEIGHT
         self.bounce(bpad.strength)
 
     def handle_obj_collisions(self):
