@@ -287,6 +287,8 @@ class Player(pg.sprite.Sprite):
         return self.get_pos_change(self.pos)
 
     def bouncepad_action(self, bpad: Bouncepad):
+        self.pos.y = bpad.pos.y - self.HEIGHT
+
         self.bounce(bpad.strength)
 
     def handle_obj_collisions(self):
@@ -295,7 +297,8 @@ class Player(pg.sprite.Sprite):
             Bouncepad: (self.bouncepad_action, ()),
         }
 
-        for obj in self.objects:
+        colliding = pg.sprite.spritecollide(self, self.objects, False)
+        for obj in colliding:
             action, args = OBJECT_COLIS_ACTIONS[type(obj)]
             action(obj, *args)
 
@@ -315,11 +318,11 @@ class Player(pg.sprite.Sprite):
         return new_pos - self.last_pos
 
     def update(self):
-        print(f'ypos {self.pos.y:.2f}, yvel {self.vel.y:.2f}')
         self.actions.clear()
 
         self.update_actions()
         self.perform_actions()
+        self.handle_obj_collisions()
         self.delta_pos = self.update_physics()
 
         self.update_image()

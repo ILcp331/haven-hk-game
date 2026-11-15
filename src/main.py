@@ -56,6 +56,14 @@ class Game:
             id='platform'
         )
 
+        Bouncepad(
+            (889, self.HEIGHT - BORDER_WALL_THICKNESS - 32),
+            (256, BORDER_WALL_THICKNESS),
+            512,
+            self.sprites, self.objects,
+            id='bpad_r'
+        )
+
     def place_border_walls(self):
         Wall(
             (0, 0),
@@ -160,6 +168,9 @@ class Game:
             background=self.DEBUG_BG_COLOR,
             alignment='right',
         )
+
+        # Logs
+        print(f'Pinned: {self.debug_mouse_pinned_pos}')
 
     def mainloop(self):
         print(f'======== FRAME {self.frames} ========')
