@@ -1,3 +1,4 @@
+from math import sqrt
 from enum import Enum, auto
 from dataclasses import dataclass
 
@@ -47,14 +48,15 @@ class Player(pg.sprite.Sprite):
     COLOR_GRAD_S = 100
     COLOR_GRAD_L = 60
     COLOR_GRAD_H_RANGE = (0, 120)
-    COLOR_GRAD_VEL_RANGE = (-10, -30)
+    COLOR_GRAD_BHEIGHT_RANGE = (45, 350)
 
     # Physics
     ACCELERATION = 1
     FRICTION = 0.875
     GRAVITY = 1
     TERMINAL_VELOCITY = 9999
-    BOUNCE_ENERGY_LOSS = 0
+    BOUNCE_ENERGY_LOSS = 2
+    BOUNCE_CORRECTION_COEF = 1.017625
 
     KEYBINDS = Keybind(
         move_left  = pg.K_LEFT,
@@ -75,7 +77,9 @@ class Player(pg.sprite.Sprite):
         self.pos = pg.Vector2(pos)
         self.vel = pg.Vector2(0, 0)
         self.bounce_compensate_amount = 0
-        self.stored_yvel = -(self.vel.y - self.BOUNCE_ENERGY_LOSS)
+        self.fall_dist = 0
+        self.fell_from_y = self.pos.y
+        self.last_yvel = self.vel.y
 
         self.last_pos = self.pos.copy()
         self.delta_pos = self.last_pos - self.pos  # Used for external access
@@ -100,15 +104,15 @@ class Player(pg.sprite.Sprite):
             return
 
         hue_change = self.COLOR_GRAD_H_RANGE[1] - self.COLOR_GRAD_H_RANGE[0]
-        vel_change = self.COLOR_GRAD_VEL_RANGE[1] - self.COLOR_GRAD_VEL_RANGE[0]
+        bheight_change = self.COLOR_GRAD_BHEIGHT_RANGE[1] - self.COLOR_GRAD_BHEIGHT_RANGE[0]
 
         # Multiplier from 0.0 to 1.0
-        vel_factor = (self.stored_yvel - self.COLOR_GRAD_VEL_RANGE[0]) / vel_change
+        bheight_factor = (self.fall_dist - self.COLOR_GRAD_BHEIGHT_RANGE[0]) / bheight_change
 
         lower_cap = max(0, self.COLOR_GRAD_H_RANGE[0])
         upper_cap = min(self.COLOR_GRAD_H_RANGE[1], 360)
 
-        hue = vel_factor * hue_change + self.COLOR_GRAD_H_RANGE[0]
+        hue = bheight_factor * hue_change + self.COLOR_GRAD_H_RANGE[0]
         hue = max(lower_cap, hue)
         hue = min(hue, upper_cap)
 
@@ -138,7 +142,7 @@ class Player(pg.sprite.Sprite):
             new_rect.x += delta.x
             self.vel.x = 0
 
-            print(f'resolved by moving {delta.x} in the x dir')
+            print(f'resolved by moving {delta.x} in the x dir (now {new_rect.x})')
 
         elif direction == 'y':
             if self.vel.y > 0:
@@ -146,7 +150,10 @@ class Player(pg.sprite.Sprite):
 
                 self.is_grounded = True
                 if self.just_grounded():
-                    self.stored_yvel += -(self.vel.y - self.BOUNCE_ENERGY_LOSS)
+                    new_y = new_rect.y + delta.y
+
+                    self.fall_dist += new_y - self.fell_from_y
+                    self.fell_from_y = new_y
 
             elif self.vel.y < 0:
                 delta.y = wall_rect.bottom - new_rect.top
@@ -154,7 +161,7 @@ class Player(pg.sprite.Sprite):
             new_rect.y += delta.y
             self.vel.y = 0
 
-            print(f'resolved by moving {delta.y} in the y dir')
+            print(f'resolved by moving {delta.y} in the y dir (now {new_rect.y})')
 
         else:
             raise ValueError(f'direction argument must be either "x" or "y". Got {direction}')
@@ -234,12 +241,17 @@ class Player(pg.sprite.Sprite):
             if self.is_grounded:
                 self.bounce()
 
-    def bounce(self, extra_vel: float = 0):
-        # Stored velocity is transferred to vel.y
-        # Influence from upcoming gravity is accounted for
-        self.vel.y = self.stored_yvel + extra_vel - self.GRAVITY
+    def calc_bounce_vel(self, height_px: float) -> float:
+        # v = sqrt(2gh)
+        bounce_vel = sqrt(2 * self.GRAVITY * height_px) - self.BOUNCE_ENERGY_LOSS
+        bounce_vel *= self.BOUNCE_CORRECTION_COEF  # Correct error due to euler's method
 
-        self.stored_yvel = 0
+        return -bounce_vel  # Negated because negative = up
+
+    def bounce(self, extra_height: float = 0):
+        self.vel.y = self.calc_bounce_vel(self.fall_dist + extra_height)
+
+        self.fall_dist = 0
 
     def update_physics(self) -> pg.Vector2:
         self.vel.x *= self.FRICTION
@@ -248,10 +260,9 @@ class Player(pg.sprite.Sprite):
 
         # Tests for collisions at a new position based on velocity, each axis tested independently
         # If a collision is made, player snaps to colliding wall
-        # If a collision is not made, velocity is applied to pos later
         collided_by_dir = self.handle_collisions()
 
-        # Apply velocity for axes where a collision was not detected
+        # If a collision is not made, velocity is applied to pos here
         if not collided_by_dir['x']:
             self.pos.x += self.vel.x
 
@@ -259,11 +270,15 @@ class Player(pg.sprite.Sprite):
             self.is_grounded = False
             self.pos.y += self.vel.y
 
-        # Apply compensation for any y offsets due to collisions if we are about to bounce
-        if self.actions.bounce or self.just_entered_falling():
-            print(f'applied {self.bounce_compensate_amount} ({self.pos.y} -> {self.pos.y + self.bounce_compensate_amount})')
+        if self.just_started_falling():
+            # Needs to account for this frame's gravity
+            self.fell_from_y = self.pos.y - self.GRAVITY
 
-            self.pos.y += self.bounce_compensate_amount
+        # Apply compensation for any y offsets due to collisions if we are about to bounce
+        # FIXME: For some reason, the compensation makes bounce vel calculations worse
+        if self.actions.bounce:
+            # print(f'applied comp of {self.bounce_compensate_amount} ({self.pos.y:.2f} -> {self.pos.y + self.bounce_compensate_amount:.2f})')
+            # self.pos.y += self.bounce_compensate_amount
             self.bounce_compensate_amount = 0
 
         return self.get_pos_change(self.pos)
@@ -274,14 +289,17 @@ class Player(pg.sprite.Sprite):
     def just_grounded(self):
         return (not self.was_grounded) and self.is_grounded
 
-    def just_entered_falling(self):
+    def just_left_ground(self):
         return self.was_grounded and (not self.is_grounded)
+
+    def just_started_falling(self):
+        return (self.last_yvel < 0) and (self.vel.y >= 0)
 
     def get_pos_change(self, new_pos: pg.Vector2) -> pg.Vector2:
         return new_pos - self.last_pos
 
     def update(self):
-        print(f'pos {self.pos.y - 32 - 256}, vel {self.vel.y}')
+        print(f'ypos {self.pos.y:.2f}, yvel {self.vel.y:.2f}')
         self.actions.clear()
 
         self.update_actions()
@@ -290,5 +308,8 @@ class Player(pg.sprite.Sprite):
 
         self.update_image()
 
+        print(f'\nfell from: {self.fell_from_y}; fall dist: {self.fall_dist}\n')
+
         self.was_grounded = self.is_grounded
         self.last_pos = self.pos.copy()
+        self.last_yvel = self.vel.y

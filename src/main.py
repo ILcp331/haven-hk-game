@@ -15,6 +15,11 @@ class Game:
     WIDTH = 1280
     HEIGHT = 720
 
+    PLAYER_INIT_POS = (
+        WIDTH / 2 - Player.WIDTH / 2,
+        BORDER_WALL_THICKNESS + 256
+    )
+
     BG_COLOR = pg.Color(255, 255, 255)
     DEBUG_TEXT_COLOR = pg.Color(96, 255, 96)
     DEBUG_BG_COLOR = pg.Color(0, 0, 0, 160)
@@ -31,24 +36,21 @@ class Game:
         self.running = True
         self.allow_debug = allow_debug
         self.debug_active = allow_debug
-        self.debug_lines = []
+        self.debug_lines_left = []
 
         self.sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
 
         # Sprites
-        self.player = Player(
-            self.walls,
-            (self.WIDTH / 2 - Player.WIDTH / 2, BORDER_WALL_THICKNESS + 256),
-            self.sprites
-        )
+        self.player = Player(self.walls, self.PLAYER_INIT_POS, self.sprites)
 
         # Level
         self.place_border_walls()
         Wall(
             (0, self.HEIGHT - 256),
-            (500, BORDER_WALL_THICKNESS),
-            self.sprites, self.walls
+            (600, BORDER_WALL_THICKNESS),
+            self.sprites, self.walls,
+            id='platform'
         )
 
     def place_border_walls(self):
@@ -87,28 +89,51 @@ class Game:
         self.sprites.draw(self.window)
 
     def debug_update(self):
-        vel_change = self.player.COLOR_GRAD_VEL_RANGE[1] - self.player.COLOR_GRAD_VEL_RANGE[0]
-        vel_factor = (self.player.stored_yvel - self.player.COLOR_GRAD_VEL_RANGE[0]) / vel_change
+        bheight_change = Player.COLOR_GRAD_BHEIGHT_RANGE[1] - Player.COLOR_GRAD_BHEIGHT_RANGE[0]
+        bheight_factor = (self.player.fall_dist - Player.COLOR_GRAD_BHEIGHT_RANGE[0]) / bheight_change
 
-        self.debug_lines = [
+        self.debug_lines_left = [
             f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)',
             f'Sprites: {len(self.sprites)} | Walls: {len(self.walls)}',
             f'Player: pos {round(self.player.pos, 2)}',
             f'        vel {round(self.player.vel, 2)}',
             f'        delta {round(self.player.delta_pos, 2)} (comp: {self.player.bounce_compensate_amount})',
-            f'        grounded: {self.player.is_grounded}',
-            f'        stored: {self.player.stored_yvel} ({vel_factor * 100:.2f}%)',
-            f'        hue: {self.player.color.hsla[0]:.2f}/{Player.COLOR_GRAD_H_RANGE[1]}'
+            f'        status: isg {self.player.is_grounded} jsg {self.player.just_grounded()}',
+            f'                jsf_colis {self.player.just_left_ground()} jsf_velct {self.player.just_started_falling()}',
+            f'        fall_dist: {self.player.fall_dist} (from {self.player.fell_from_y})',
+            f'        hue: {self.player.color.hsla[0]:.2f}/{Player.COLOR_GRAD_H_RANGE[1]} ({bheight_factor*100:.2f}%)'
+        ]
+
+        self.debug_lines_right = [
+            'Init conditions',
+            f'player init at {self.PLAYER_INIT_POS}',
+            f'player size: {Player.WIDTH}x{Player.HEIGHT}',
+            'player physics',
+            f'{Player.GRAVITY} = grav',
+            f'{Player.FRICTION} = fric',
+            f'{Player.TERMINAL_VELOCITY} = maxv',
+            f'{Player.BOUNCE_ENERGY_LOSS} = elos',
+            f'wall thickness: {BORDER_WALL_THICKNESS}',
         ]
 
         draw_lines(
             self.window,
             (8, 8),
             self.DEBUG_FONT,
-            self.debug_lines,
+            self.debug_lines_left,
             self.DEBUG_TEXT_COLOR,
             background=self.DEBUG_BG_COLOR,
             alignment='left',
+        )
+
+        draw_lines(
+            self.window,
+            (self.WIDTH - 8, 8),
+            self.DEBUG_FONT,
+            self.debug_lines_right,
+            self.DEBUG_TEXT_COLOR,
+            background=self.DEBUG_BG_COLOR,
+            alignment='right',
         )
 
     def mainloop(self):
