@@ -172,6 +172,24 @@ class Game:
         # Logs
         print(f'Pinned: {self.debug_mouse_pinned_pos}')
 
+    def load_level(self):
+        pass
+
+    def reset(self):
+        self.sprites.empty()
+        self.walls.empty()
+        self.objects.empty()
+
+        self.player = Player(
+            self.walls,
+            self.objects,
+            self.PLAYER_INIT_POS,
+            self.sprites
+        )
+
+        self.load_level()
+
+
     def mainloop(self):
         print(f'======== FRAME {self.frames} ========')
         self.window.fill((255, 255, 255))
