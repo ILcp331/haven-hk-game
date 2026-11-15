@@ -242,7 +242,7 @@ class Player(pg.sprite.Sprite):
                 self.bounce()
 
     def calc_bounce_vel(self, height_px: float) -> float:
-        return -sqrt(2 * self.GRAVITY * height_px)
+        return -sqrt(2 * self.GRAVITY * height_px) + self.BOUNCE_ENERGY_LOSS
 
     def bounce(self, extra_height: float = 0):
         self.vel.y = self.calc_bounce_vel(self.fall_dist + extra_height)
@@ -271,11 +271,11 @@ class Player(pg.sprite.Sprite):
             self.fell_from_y = self.pos.y
 
         # Apply compensation for any y offsets due to collisions if we are about to bounce or fall
-        # if self.actions.bounce or self.just_left_ground(): TODO:
-        #     print(f'applied {self.bounce_compensate_amount} ({self.pos.y} -> {self.pos.y + self.bounce_compensate_amount})')
+        if self.actions.bounce:
+            print(f'applied comp of {self.bounce_compensate_amount} ({self.pos.y:.2f} -> {self.pos.y + self.bounce_compensate_amount:.2f})')
 
-        #     self.pos.y += self.bounce_compensate_amount
-        #     self.bounce_compensate_amount = 0
+            self.pos.y += self.bounce_compensate_amount
+            self.bounce_compensate_amount = 0
 
         return self.get_pos_change(self.pos)
 
@@ -295,7 +295,7 @@ class Player(pg.sprite.Sprite):
         return new_pos - self.last_pos
 
     def update(self):
-        print(f'pos {self.pos.y - 32 - 256}, vel {self.vel.y}')
+        print(f'y from init {self.pos.y - 32 - 256:.2f}, yvel {self.vel.y:.2f}')
         self.actions.clear()
 
         self.update_actions()
