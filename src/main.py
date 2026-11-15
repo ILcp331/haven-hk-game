@@ -4,6 +4,7 @@ from .constants import BORDER_WALL_THICKNESS
 from .utils.text import draw_lines
 from .sprites.player import Player
 from .sprites.wall import Wall
+from .sprites.bouncepad import Bouncepad
 
 pg.init()
 
@@ -37,6 +38,7 @@ class Game:
         self.allow_debug = allow_debug
         self.debug_active = allow_debug
         self.debug_lines_left = []
+        self.debug_mouse_pinned_pos = []
 
         self.sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
@@ -105,6 +107,18 @@ class Game:
             f'        hue: {self.player.color.hsla[0]:.2f}/{Player.COLOR_GRAD_H_RANGE[1]} ({bheight_factor*100:.2f}%)'
         ]
 
+        self.debug_lines_center = [
+            'Mouse position',
+            f'{pg.mouse.get_pos()}',
+            '===== PINNED =====',
+        ]
+
+        if pg.mouse.get_just_pressed()[0]:
+            self.debug_mouse_pinned_pos.append(pg.mouse.get_pos())
+
+        for pos in self.debug_mouse_pinned_pos:
+            self.debug_lines_center.append(f'{pos}')
+
         self.debug_lines_right = [
             'Init conditions',
             f'player init at {self.PLAYER_INIT_POS}',
@@ -129,6 +143,16 @@ class Game:
 
         draw_lines(
             self.window,
+            (self.WIDTH / 2, 8),
+            self.DEBUG_FONT,
+            self.debug_lines_center,
+            self.DEBUG_TEXT_COLOR,
+            background=self.DEBUG_BG_COLOR,
+            alignment='centered',
+        )
+
+        draw_lines(
+            self.window,
             (self.WIDTH - 8, 8),
             self.DEBUG_FONT,
             self.debug_lines_right,
@@ -148,6 +172,9 @@ class Game:
             if e.type == pg.KEYDOWN:
                 if e.key == pg.K_0:
                     self.debug_active = (not self.debug_active) and self.allow_debug
+
+                if e.key == pg.K_BACKSPACE:
+                    self.debug_mouse_pinned_pos = []
 
         self.update()
 
