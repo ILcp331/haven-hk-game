@@ -89,8 +89,8 @@ class Game:
         self.sprites.draw(self.window)
 
     def debug_update(self):
-        vel_change = self.player.COLOR_GRAD_VEL_RANGE[1] - self.player.COLOR_GRAD_VEL_RANGE[0]
-        # vel_factor = (self.player.fall_dist - self.player.COLOR_GRAD_VEL_RANGE[0]) / vel_change
+        bheight_change = Player.COLOR_GRAD_BHEIGHT_RANGE[1] - Player.COLOR_GRAD_BHEIGHT_RANGE[0]
+        bheight_factor = (self.player.fall_dist - Player.COLOR_GRAD_BHEIGHT_RANGE[0]) / bheight_change
 
         self.debug_lines_left = [
             f'Frame {self.frames} ({self.clock.get_fps():.2f}/{self.FPS} fps)',
@@ -98,10 +98,10 @@ class Game:
             f'Player: pos {round(self.player.pos, 2)}',
             f'        vel {round(self.player.vel, 2)}',
             f'        delta {round(self.player.delta_pos, 2)} (comp: {self.player.bounce_compensate_amount})',
-            f'        status: isg {self.player.is_grounded}, jsg {self.player.just_grounded()}',
-            f'                jsf_col {self.player.just_left_ground()} jsf_vel {self.player.just_started_falling()}',
+            f'        status: isg {self.player.is_grounded} jsg {self.player.just_grounded()}',
+            f'                jsf_colis {self.player.just_left_ground()} jsf_velct {self.player.just_started_falling()}',
             f'        fall_dist: {self.player.fall_dist} (from {self.player.fell_from_y})',
-            f'        hue: {self.player.color.hsla[0]:.2f}/{Player.COLOR_GRAD_H_RANGE[1]}'
+            f'        hue: {self.player.color.hsla[0]:.2f}/{Player.COLOR_GRAD_H_RANGE[1]} ({bheight_factor*100:.2f}%)'
         ]
 
         self.debug_lines_right = [

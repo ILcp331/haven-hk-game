@@ -48,14 +48,14 @@ class Player(pg.sprite.Sprite):
     COLOR_GRAD_S = 100
     COLOR_GRAD_L = 60
     COLOR_GRAD_H_RANGE = (0, 120)
-    COLOR_GRAD_VEL_RANGE = (-10, -30)
+    COLOR_GRAD_BHEIGHT_RANGE = (45, 350)
 
     # Physics
     ACCELERATION = 1
     FRICTION = 0.875
     GRAVITY = 1
     TERMINAL_VELOCITY = 9999
-    BOUNCE_ENERGY_LOSS = 0
+    BOUNCE_ENERGY_LOSS = 2
     BOUNCE_CORRECTION_COEF = 1.017625
 
     KEYBINDS = Keybind(
@@ -104,16 +104,15 @@ class Player(pg.sprite.Sprite):
             return
 
         hue_change = self.COLOR_GRAD_H_RANGE[1] - self.COLOR_GRAD_H_RANGE[0]
-        vel_change = self.COLOR_GRAD_VEL_RANGE[1] - self.COLOR_GRAD_VEL_RANGE[0]
+        bheight_change = self.COLOR_GRAD_BHEIGHT_RANGE[1] - self.COLOR_GRAD_BHEIGHT_RANGE[0]
 
         # Multiplier from 0.0 to 1.0
-        # vel_factor = (self.fall_dist - self.COLOR_GRAD_VEL_RANGE[0]) / vel_change TODO:
-        vel_factor = 1
+        bheight_factor = (self.fall_dist - self.COLOR_GRAD_BHEIGHT_RANGE[0]) / bheight_change
 
         lower_cap = max(0, self.COLOR_GRAD_H_RANGE[0])
         upper_cap = min(self.COLOR_GRAD_H_RANGE[1], 360)
 
-        hue = vel_factor * hue_change + self.COLOR_GRAD_H_RANGE[0]
+        hue = bheight_factor * hue_change + self.COLOR_GRAD_H_RANGE[0]
         hue = max(lower_cap, hue)
         hue = min(hue, upper_cap)
 
