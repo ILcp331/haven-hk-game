@@ -26,7 +26,7 @@ class Game:
 
         self.running = True
         self.allow_debug = allow_debug
-        self.debug_active = allow_debug
+        self.debug_active = False
         self.debug_lines_left = []
         self.debug_mouse_pinned_pos = []
 

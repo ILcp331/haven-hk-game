@@ -12,6 +12,7 @@ PyInstaller.__main__.run([
     "game.py",
     "--name=game",
     "--onefile",
+    '--windowed',
     f"--add-data=assets{sep}assets",
     f"--add-data=levels{sep}levels",
     "--hidden-import=pygame-ce",
