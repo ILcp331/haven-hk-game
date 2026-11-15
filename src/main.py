@@ -105,9 +105,15 @@ class Game:
         ]
 
         self.debug_lines_right = [
-            'Init conditions:',
+            'Init conditions',
             f'player init at {self.PLAYER_INIT_POS}',
-            f'wall thickness: {BORDER_WALL_THICKNESS}'
+            f'player size: {Player.WIDTH}x{Player.HEIGHT}',
+            'player physics',
+            f'{Player.GRAVITY} = grav',
+            f'{Player.FRICTION} = fric',
+            f'{Player.TERMINAL_VELOCITY} = maxv',
+            f'{Player.BOUNCE_ENERGY_LOSS} = elos',
+            f'wall thickness: {BORDER_WALL_THICKNESS}',
         ]
 
         draw_lines(
