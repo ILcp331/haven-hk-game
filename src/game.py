@@ -1,6 +1,5 @@
-from pathlib import Path
-
 import pygame as pg
+print(pg.__file__)
 
 from .constants import WIDTH, HEIGHT, SPEED, FPS, BORDER_WALL_THICKNESS, LEVEL_PATHS
 from .utils.text import draw_lines
@@ -8,7 +7,6 @@ from .utils.level import LevelLoader, LevelInfo
 from .sprites.player import Player
 
 pg.init()
-
 
 class Game:
     BG_COLOR = pg.Color(255, 255, 255)
