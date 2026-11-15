@@ -6,11 +6,11 @@ wall 0,688,684,32,floor
 wall 30,160,256,32,platform_start
 
 wall 380,11,32,500,wall_top
-wall 407,480,192,32,platform_troll
+wall 407,479,192,32,platform_troll
 wall 684,300,128,512,wall_mid
 
 slme 812,672,96,64,slime_l
 slme 1000,672,256,64,slime_r
 bpad 890,640,128,128,150,bpad
 
-wall 1114,160,128,24,finish
+wall 1114,155,192,32,finish

@@ -1,7 +1,7 @@
 from src.main import Game
 
 if __name__ == "__main__":
-    game = Game(allow_debug=False)
+    game = Game(allow_debug=True)
 
     while game.running:
         game.mainloop()
