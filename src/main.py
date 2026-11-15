@@ -1,6 +1,8 @@
+from pathlib import Path
+
 import pygame as pg
 
-from .constants import BORDER_WALL_THICKNESS
+from .constants import BORDER_WALL_THICKNESS, LEVEL_PATHS
 from .utils.text import draw_lines
 from .sprites.player import Player
 from .sprites.wall import Wall
@@ -172,8 +174,18 @@ class Game:
         # Logs
         print(f'Pinned: {self.debug_mouse_pinned_pos}')
 
-    def load_level(self):
+    def parse_level_file_line(self, line: str):
         pass
+
+    def load_level_file(self, path: Path):
+        with open(path, 'r', encoding='utf-8') as file:
+            for line in file:
+                self.parse_level_file_line(line)
+
+    def load_level(self, level_id: str):
+        path = LEVEL_PATHS[level_id]
+
+        self.load_level_file(path)
 
     def reset(self):
         self.sprites.empty()
@@ -187,7 +199,7 @@ class Game:
             self.sprites
         )
 
-        self.load_level()
+        self.load_level('testing')
 
 
     def mainloop(self):
