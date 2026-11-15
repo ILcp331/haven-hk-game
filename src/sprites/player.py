@@ -1,10 +1,11 @@
 from math import sqrt
 from enum import Enum, auto
 from dataclasses import dataclass
-
 from typing import Literal
 
 import pygame as pg
+
+from .bouncepad import Bouncepad
 
 pg.init()
 
@@ -126,7 +127,7 @@ class Player(pg.sprite.Sprite):
         self.image.fill(self.color)
         self.rect.x, self.rect.y = self.pos
 
-    def resolve_collision(
+    def resolve_wall_collision(
         self,
         player_rect: pg.FRect,
         wall_rect: pg.FRect,
@@ -173,7 +174,7 @@ class Player(pg.sprite.Sprite):
 
         return delta
 
-    def handle_collisions(self) -> dict[Literal['x', 'y'], bool]:
+    def handle_wall_collisions(self) -> dict[Literal['x', 'y'], bool]:
         collided = {'x': False, 'y': False}
 
         # For testing horizontal movement
@@ -202,7 +203,7 @@ class Player(pg.sprite.Sprite):
                 print()
 
                 collided['x'] = True
-                dx, _ = self.resolve_collision(player_xvel_rect, wall_rect, 'x')
+                dx, _ = self.resolve_wall_collision(player_xvel_rect, wall_rect, 'x')
 
                 # Currently no need to compensate for collision dx in any way
 
@@ -213,7 +214,7 @@ class Player(pg.sprite.Sprite):
                 print()
 
                 collided['y'] = True
-                _, dy = self.resolve_collision(player_yvel_rect, wall_rect, 'y')
+                _, dy = self.resolve_wall_collision(player_yvel_rect, wall_rect, 'y')
 
                 # We need to compensate in the opposite direction of collision dy
                 self.bounce_compensate_amount += -dy
@@ -261,15 +262,14 @@ class Player(pg.sprite.Sprite):
         self.vel.y += self.GRAVITY
         self.vel.y = min(self.vel.y, self.TERMINAL_VELOCITY)
 
-        # Tests for collisions at a new position based on velocity, each axis tested independently
         # If a collision is made, player snaps to colliding wall
-        collided_by_dir = self.handle_collisions()
+        collided_axis = self.handle_wall_collisions()
 
         # If a collision is not made, velocity is applied to pos here
-        if not collided_by_dir['x']:
+        if not collided_axis['x']:
             self.pos.x += self.vel.x
 
-        if not collided_by_dir['y']:
+        if not collided_axis['y']:
             self.is_grounded = False
             self.pos.y += self.vel.y
 
@@ -285,6 +285,9 @@ class Player(pg.sprite.Sprite):
             self.bounce_compensate_amount = 0
 
         return self.get_pos_change(self.pos)
+
+    def handle_obj_collisions(self):
+        pass
 
     def update_state(self):
         raise NotImplementedError
